@@ -52,6 +52,10 @@ public class Main extends SimpleApplication {
 	sun.setDirection((new Vector3f(-0.5f, -0.5f, -0.5f)).normalizeLocal());
 	sun.setColor(ColorRGBA.White);
 	rootNode.addLight(sun); 
+	DirectionalLight sun2 = new DirectionalLight();
+	sun2.setDirection((new Vector3f(-0.5f, 0.5f, -0.5f)).normalizeLocal());
+	sun2.setColor(ColorRGBA.White);
+	rootNode.addLight(sun2); 
 	
 	generateCity(25);
     }
@@ -65,6 +69,8 @@ public class Main extends SimpleApplication {
     ArrayList<Geometry> roadsZ = new ArrayList<Geometry>();
     ArrayList<Geometry> buildings = new ArrayList<Geometry>();
     
+    float roadWidth = .5f;
+    
     public void genRoads(int citySize){
 	
 	int maxRand = 10;
@@ -72,7 +78,6 @@ public class Main extends SimpleApplication {
 	int roadXPos = 0;	
 	int roadYPos = 0;
 	int roadZPos = 0;
-	float roadWidth = .5f;
 	float roadSeperation;
 	
 	boolean secondPass = false;
@@ -114,6 +119,14 @@ public class Main extends SimpleApplication {
 	
     }
     
+    public float calcScale(float a1, float a2){
+	float scale = 0.0f;
+	
+	scale = a2 - a1;
+	
+	return scale;
+    }
+    
     public void genBuildings(int citySize){
 	int xPos = 0;	
 	int yPos = 0;
@@ -132,21 +145,47 @@ public class Main extends SimpleApplication {
 	    }
 	    System.out.println("Road TickX: " + roadXTick++);
 	    System.out.println("Road TickZ: " + roadZTick);
-	    //System.out.println(roads.size());
 	    
-	    //roads.get(i).getLocalTranslation().getX();
-	    //logger.log(Level.OFF, "road x loc: {0}",new Object[]{roads.get(i).getWorldTranslation().getX()});
-	    //System.out.println("Road reference " + i + ": " + roads.get(i).getWorldTranslation().getX());
-	    Box b = new Box(new Vector3f(0, 0, 0), .5f, ranHeight, .5f);
-	    //move box to same "ground" level
-	    b.updateGeometry(new Vector3f(b.getCenter().getX(), b.getCenter().getY()+(b.getYExtent()), b.getCenter().getZ()), b.getXExtent(), b.getYExtent(), b.getZExtent());
-	    Geometry geom = new Geometry("Box", b);
+	    Geometry geom = null;
+	    
 	    if(roadXTick >= citySize){
 		roadZTick++;
 		roadXTick=0;
-		geom.setLocalTranslation(roadsX.get(roadXTick).getWorldTranslation().getX(), 0, roadsZ.get(roadZTick).getWorldTranslation().getZ());
+		//Box b = new Box(new Vector3f(0, 0, 0), .5f, ranHeight, .5f);
+		//sets box to scale to fit gaps in roads
+		Box b = null;
+		if(roadXTick < roadsX.size()-1 && roadZTick < roadsZ.size()-1){
+		b = new Box(new Vector3f(0, 0, 0), (calcScale(roadsX.get(roadXTick).getWorldTranslation().getX(), roadsX.get(roadXTick+1).getWorldTranslation().getX())/2)-roadWidth,
+			ranHeight,
+			(calcScale(roadsZ.get(roadZTick).getWorldTranslation().getZ(), roadsZ.get(roadZTick+1).getWorldTranslation().getZ())/2)-roadWidth);
+		b.updateGeometry(
+			new Vector3f(
+			    b.getCenter().getX()+(b.getXExtent())-roadWidth,
+			    b.getCenter().getY()+(b.getYExtent()),
+			    b.getCenter().getZ()+(b.getZExtent())-roadWidth),
+			b.getXExtent(),
+			b.getYExtent(),
+			b.getZExtent());
+		geom = new Geometry("Box", b);
+		geom.setLocalTranslation(roadsX.get(roadXTick).getWorldTranslation().getX()+roadWidth*2, 0, roadsZ.get(roadZTick).getWorldTranslation().getZ()+roadWidth*2);
+		}
 	    }else{
-		geom.setLocalTranslation(roadsX.get(roadXTick).getWorldTranslation().getX(), 0, roadsZ.get(roadZTick).getWorldTranslation().getZ());
+		Box b = null;
+		if(roadXTick < roadsX.size()-1 && roadZTick < roadsZ.size()-1){
+		b = new Box(new Vector3f(0, 0, 0), (calcScale(roadsX.get(roadXTick).getWorldTranslation().getX(), roadsX.get(roadXTick+1).getWorldTranslation().getX())/2)-roadWidth,
+			ranHeight,
+			(calcScale(roadsZ.get(roadZTick).getWorldTranslation().getZ(), roadsZ.get(roadZTick+1).getWorldTranslation().getZ())/2)-roadWidth);
+		b.updateGeometry(
+			new Vector3f(
+			    b.getCenter().getX()+(b.getXExtent())-roadWidth,
+			    b.getCenter().getY()+(b.getYExtent()),
+			    b.getCenter().getZ()+(b.getZExtent())-roadWidth),
+			b.getXExtent(),
+			b.getYExtent(),
+			b.getZExtent());
+		geom = new Geometry("Box", b);
+		geom.setLocalTranslation(roadsX.get(roadXTick).getWorldTranslation().getX()+roadWidth*2, 0, roadsZ.get(roadZTick).getWorldTranslation().getZ()+roadWidth*2);
+		}
 	    }
 
 	    Material mat = new Material( assetManager, "Common/MatDefs/Light/Lighting.j3md");
@@ -156,16 +195,20 @@ public class Main extends SimpleApplication {
 	    mat.getAdditionalRenderState().setWireframe(false);
 	    mat.getAdditionalRenderState().setFaceCullMode(FaceCullMode.Back);	    
 	    
-	    geom.setMaterial(mat);
+	    if(geom!=null){
+		geom.setMaterial(mat);
+		rootNode.attachChild(geom);
+		buildings.add(geom);
+	    }
 
-	    rootNode.attachChild(geom);
+	    
 	    if(xPos>=8){
 		xPos=0;
 		zPos+=2; 
 	    }else{
 		xPos+=2;
 	    }
-	    buildings.add(geom);
+	    
 	}
     }
 
