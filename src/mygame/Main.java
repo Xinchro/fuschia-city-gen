@@ -1,5 +1,9 @@
 package mygame;
 
+import com.jme3.animation.AnimChannel;
+import com.jme3.animation.AnimControl;
+import com.jme3.animation.AnimEventListener;
+import com.jme3.animation.LoopMode;
 import com.jme3.app.SimpleApplication;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.KeyTrigger;
@@ -16,15 +20,28 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.system.AppSettings;
 import com.jme3.input.controls.ActionListener;
+import com.jme3.material.RenderState.BlendMode;
+import com.jme3.scene.Node;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * test
  * @author normenhansen
  */
-public class Main extends SimpleApplication {
+public class Main extends SimpleApplication implements AnimEventListener{
+
+    @Override
+    public void onAnimCycleDone(AnimControl control, AnimChannel channel, String animName) {
+	//throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void onAnimChange(AnimControl control, AnimChannel channel, String animName) {
+    	//throw new UnsupportedOperationException("Not supported yet.");
+    }
     
     public static void main(String[] args) {
         Main app = new Main();
@@ -45,6 +62,10 @@ public class Main extends SimpleApplication {
 	inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
 	
 	inputManager.addListener(actionListener,"Space");
+	
+	inputManager.addMapping("Anim", new KeyTrigger(KeyInput.KEY_E));
+	
+	inputManager.addListener(actionListener,"Anim");
     }
     
     boolean spacePressed;
@@ -63,6 +84,18 @@ public class Main extends SimpleApplication {
 			genNewRandomCity();
 		    }
 		    break;
+		case "Anim":	
+		    if (!channel.getAnimationName().equals("Forward")) {
+			channel.setAnim("Forward", 0.50f);
+			channel.setLoopMode(LoopMode.Loop);
+			channel.setSpeed(0.1f);
+		      }else{
+			channel.setAnim("Still", 0.50f);
+			channel.setSpeed(0.1f);
+			channel.setLoopMode(LoopMode.Loop);
+			}
+		    break;
+		    
 	    }
 	}
       };
@@ -122,9 +155,51 @@ public class Main extends SimpleApplication {
 	mat1.getAdditionalRenderState().setWireframe(false);
 	mat1.getAdditionalRenderState().setFaceCullMode(FaceCullMode.Back);
 	
-	generateCity(1);
+	//generateCity(1);
+	
+	addCube();
+	
+	loadPlayerModel();
 	
 	
+    }
+    
+    private AnimChannel channel;
+    private AnimControl control;
+    Node player;
+    
+    public void loadPlayerModel(){
+	
+	/** Load a model. Uses model and texture from jme3-test-data library! */ 
+        player = (Node) assetManager.loadModel("Models/Placeholder/Placeholder.j3o");
+        Material mat_default = new Material( assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
+        player.setMaterial(mat_default);
+        rootNode.attachChild(player);
+	
+	for(int i=0;i<player.getChildren().size();i++){
+	    //System.out.println(player.getControl(i));
+	}
+	
+	Node n1 = (Node) player.getChild("Armature");
+	Node n2 = (Node) player.getChild("Cube");
+
+	//control = new AnimControl();
+	control = n2.getControl(AnimControl.class);
+	control.addListener(this);
+	channel = control.createChannel();
+	channel.setAnim("Still");
+	
+    }
+    
+    public void addCube(){
+	/** Translucent/transparent cube. Uses Texture from jme3-test-data library! */
+	Box boxshape3 = new Box(Vector3f.ZERO, 1f,1f,1f);
+	Geometry cube_translucent = new Geometry("translucent cube", boxshape3);
+	Material mat_tt = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+	//mat_tt.setTexture("ColorMap", assetManager.loadTexture("Textures/ColoredTex/Monkey.png"));
+	mat_tt.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+	cube_translucent.setMaterial(mat_tt); 
+	rootNode.attachChild(cube_translucent); 
     }
     
     int citySize;
