@@ -1,4 +1,4 @@
-package mygame;
+package Main;
 
 import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
@@ -55,50 +55,6 @@ public class Main extends SimpleApplication implements AnimEventListener{
 	app.settings.setHeight(600);
         app.start();
     }
-    
-
-    
-    public void initKeys(){
-	inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
-	
-	inputManager.addListener(actionListener,"Space");
-	
-	inputManager.addMapping("Anim", new KeyTrigger(KeyInput.KEY_E));
-	
-	inputManager.addListener(actionListener,"Anim");
-    }
-    
-    boolean spacePressed;
-    
-    private ActionListener actionListener = new ActionListener() {
-	public void onAction(String name, boolean keyPressed, float tpf) {
-	    switch(name){
-		case "Space":
-		    if(spacePressed){
-			//System.out.println("rootNode children: " + rootNode.getQuantity());
-			//System.out.println("building array: " + buildings.size());
-			//System.out.println("road arrays: " + roadsX.size() + " " + roadsZ.size());
-			spacePressed = false;
-		    }else{
-			spacePressed = true;
-			genNewRandomCity();
-		    }
-		    break;
-		case "Anim":	
-		    if (!channel.getAnimationName().equals("Forward")) {
-			channel.setAnim("Forward", 0.50f);
-			channel.setLoopMode(LoopMode.Loop);
-			channel.setSpeed(0.1f);
-		      }else{
-			channel.setAnim("Still", 0.50f);
-			channel.setSpeed(0.1f);
-			channel.setLoopMode(LoopMode.Loop);
-			}
-		    break;
-		    
-	    }
-	}
-      };
 
    //private static final Logger logger = Logger.getLogger(Main.class.getName());
     
@@ -110,12 +66,15 @@ public class Main extends SimpleApplication implements AnimEventListener{
     DirectionalLight sun2 = new DirectionalLight();
     
     Material mat, mat1;
+    Input input;
+    Player player;
     
     @Override
     public void simpleInitApp() {
 	//logger.setLevel(Level.OFF);
 	//this.
-	initKeys();
+	input = new Input(this);
+	input.initKeys();
 	java.util.logging.Logger.getLogger("").setLevel(Level.SEVERE);
 	
 //	TestCityGenGUI gui = new TestCityGenGUI(this);
@@ -159,29 +118,36 @@ public class Main extends SimpleApplication implements AnimEventListener{
 	
 	addCube();
 	
-	loadPlayerModel();
+	player = new Player();
+	//player.loadModel();
 	
 	
     }
     
-    private AnimChannel channel;
-    private AnimControl control;
-    Node player;
+    public AnimChannel channel;
+    public AnimChannel getChannel(){
+	return channel;
+    }
+    public AnimControl control;
+    public AnimControl getControl(){
+	return control;
+    }
+    Node playerNode;
     
     public void loadPlayerModel(){
 	
 	/** Load a model. Uses model and texture from jme3-test-data library! */ 
-        player = (Node) assetManager.loadModel("Models/Placeholder/Placeholder.j3o");
+        playerNode = (Node) assetManager.loadModel("Models/Placeholder/Placeholder.j3o");
         Material mat_default = new Material( assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
-        player.setMaterial(mat_default);
-        rootNode.attachChild(player);
+        playerNode.setMaterial(mat_default);
+        rootNode.attachChild(playerNode);
 	
-	for(int i=0;i<player.getChildren().size();i++){
+	for(int i=0;i<playerNode.getChildren().size();i++){
 	    //System.out.println(player.getControl(i));
 	}
 	
-	Node n1 = (Node) player.getChild("Armature");
-	Node n2 = (Node) player.getChild("Cube");
+	Node n1 = (Node) playerNode.getChild("Armature");
+	Node n2 = (Node) playerNode.getChild("Cube");
 
 	//control = new AnimControl();
 	control = n2.getControl(AnimControl.class);
