@@ -3,10 +3,7 @@ package Main;
 import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.animation.AnimEventListener;
-import com.jme3.animation.LoopMode;
 import com.jme3.app.SimpleApplication;
-import com.jme3.input.KeyInput;
-import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
@@ -19,17 +16,16 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.system.AppSettings;
-import com.jme3.input.controls.ActionListener;
 import com.jme3.material.RenderState.BlendMode;
+import com.jme3.scene.CameraNode;
 import com.jme3.scene.Node;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * test
- * @author normenhansen
+ * @author Walter Reis
  */
 public class Main extends SimpleApplication implements AnimEventListener{
 
@@ -46,11 +42,13 @@ public class Main extends SimpleApplication implements AnimEventListener{
     public static void main(String[] args) {
         Main app = new Main();
 	AppSettings settings = new AppSettings(true);
+	app.setPauseOnLostFocus(false);
 	app.setSettings(settings);
+	app.settings.setUseJoysticks(true);
 	app.setShowSettings(false);
 	app.setDisplayFps(true);
 	app.setDisplayStatView(true);
-	app.settings.setTitle("FUSCHIA");
+	app.settings.setTitle("FUSCHIA - Full Ultra Speed Combat Harmony In Air");
 	app.settings.setWidth(800);
 	app.settings.setHeight(600);
         app.start();
@@ -68,6 +66,7 @@ public class Main extends SimpleApplication implements AnimEventListener{
     Material mat, mat1;
     Input input;
     Player player;
+    CameraNode camNode;
     
     @Override
     public void simpleInitApp() {
@@ -119,6 +118,11 @@ public class Main extends SimpleApplication implements AnimEventListener{
 	addCube();
 	
 	player = new Player();
+	loadPlayerModel();
+	camNode = new CameraNode("Camera Node", this.getCamera());
+	camNode.setLocalTranslation(0.0f, 20.0f, -50.0f);
+	camNode.lookAt(playerNode.getWorldTranslation(), Vector3f.UNIT_Y);
+	playerNode.attachChild(camNode);
 	//player.loadModel();
 	
 	
@@ -415,6 +419,7 @@ public class Main extends SimpleApplication implements AnimEventListener{
     @Override
     public void simpleUpdate(float tpf) {
         //TODO: add update code
+	input.moveCharacter();
     }
 
     @Override
