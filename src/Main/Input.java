@@ -18,6 +18,7 @@ import com.jme3.input.event.MouseMotionEvent;
 import com.jme3.input.event.TouchEvent;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.sun.org.apache.bcel.internal.generic.MULTIANEWARRAY;
 
 /**
  *
@@ -25,8 +26,8 @@ import com.jme3.math.Vector3f;
  */
 public class Input implements AnalogListener, ActionListener, RawInputListener{
 
-    float movementSpeed = 0.1f;
-    float rotationSpeed = 0.01f;
+    float movementSpeed = 0.05f;
+    float rotationSpeed = 0.05f;
     
     @Override
     public void onAnalog(String name, float value, float tpf) {
@@ -89,13 +90,30 @@ public class Input implements AnalogListener, ActionListener, RawInputListener{
 
     @Override
     public void endInput() {
-	//21throw new UnsupportedOperationException("Not supported yet. endInput");
+	//throw new UnsupportedOperationException("Not supported yet. endInput");
     }
 
     
     public void moveCharacter(){
+	
+	for(int i=0;i<main.buildings.size();i++){
+	    //main.buildings.get(i).getModelBound().collideWith(main.playerNode.getWorldBound(), main.results);
+	    //main.playerNode.collideWith(main.buildings.get(i), main.results);
+	    //System.out.println("Input.moveCharacter # of collisions - " + main.results.size());
+	}
+	
+	if(speedToggle){
+	    movementSpeed = 2f;
+	}else{
+	    movementSpeed = 0.5f;
+	}
+	
 	if(movement != null){
-	    main.playerNode.setLocalTranslation(main.playerNode.localToWorld(movement.negate(),movement.negate()));
+	    Vector3f camDir = main.getCamera().getDirection();
+	    Vector3f camLeft = main.getCamera().getLeft().clone().multLocal(0.1f);
+
+	    //main.playerNode.setLocalTranslation(main.playerNode.localToWorld(movement.negate().mult(movementSpeed),movement.negate().mult(movementSpeed)));
+	    main.character.setWalkDirection(main.playerNode.getWorldRotation().getRotationColumn(0).mult(movementSpeed));
 	    //main.playerNode.move(movement.negate());
 	    //System.out.println("Move character");
 	    //System.out.println("Player local trans: " + main.playerNode.getLocalTranslation());
@@ -107,6 +125,29 @@ public class Input implements AnalogListener, ActionListener, RawInputListener{
 		    ,0
 		    ,rotation.getX()*rotationSpeed//rotation.getZ()*rotationSpeed
 			    );
+	    
+//	    main.character.setViewDirection(main.character.getViewDirection().set(main.playerNode.rotate(-rotation.getY()*rotationSpeed
+//		    ,0
+//		    ,rotation.getX()*rotationSpeed//rotation.getZ()*rotationSpeed
+//			    ).getWorldRotation().getRotationColumn(1)));
+	}
+	
+	if(xRotRActual < deadZone || xRotRActual > -deadZone){
+	    if(rotation != null){
+		rotation = new Vector3f(0,yRotR,zRotR);
+	    }
+	}
+	
+	if(yRotRActual < deadZone || yRotRActual > -deadZone){
+	    if(rotation != null){
+		rotation = new Vector3f(xRotR,0,zRotR);
+	    }
+	}
+	
+	if(zRotRActual < deadZone || zRotRActual > -deadZone){
+	    if(rotation != null){
+		rotation = new Vector3f(xRotR,yRotR,0);
+	    }
 	}
     }
     
@@ -118,6 +159,11 @@ public class Input implements AnalogListener, ActionListener, RawInputListener{
     float xRotR = 0.0f;
     float yRotR = 0.0f;
     float zRotR = 0.0f;
+    
+    float xRotRActual = 0.0f;
+    float yRotRActual = 0.0f;
+    float zRotRActual = 0.0f;
+    
     @Override
     public void onJoyAxisEvent(JoyAxisEvent evt) {
 	//throw new UnsupportedOperationException("Not supported yet. onJoyAxisEvent");
@@ -130,7 +176,7 @@ public class Input implements AnalogListener, ActionListener, RawInputListener{
 		    //case "x":
 		if(evt.getAxis().getLogicalId().equalsIgnoreCase("x")){
 		    //if(evt.getValue() > deadZone || evt.getValue() < -deadZone){
-			xRotL = evt.getValue()*movementSpeed;
+			xRotL = evt.getValue();//*movementSpeed;
 		    //}else{
 			//xRotL = 0.0f;
 		    //}
@@ -140,7 +186,7 @@ public class Input implements AnalogListener, ActionListener, RawInputListener{
 		    //case "y":
 		if(evt.getAxis().getLogicalId().equalsIgnoreCase("y")){
 		    //if(evt.getValue() > deadZone || evt.getValue() < -deadZone){
-			yRotL = evt.getValue()*movementSpeed;
+			yRotL = evt.getValue();//*movementSpeed;
 		    //}else{
 			//yRotL = 0.0f;
 		    //}
@@ -150,7 +196,7 @@ public class Input implements AnalogListener, ActionListener, RawInputListener{
 		    //case "z":
 		if(evt.getAxis().getLogicalId().equalsIgnoreCase("z")){
 		    //if(evt.getValue() > deadZone || evt.getValue() < -deadZone){
-			zRotL = evt.getValue()*movementSpeed;
+			zRotL = evt.getValue();//*movementSpeed;
 		    //}else{
 			//zRotL = 0.0f;
 		    //}
@@ -198,6 +244,39 @@ public class Input implements AnalogListener, ActionListener, RawInputListener{
 	    movement = new Vector3f(xRotL,zRotL,yRotL);
 	}
 	//for rotation
+	
+	
+	if((evt.getAxis().getAxisId() == 2)
+		|| (evt.getAxis().getAxisId() == 3)){
+	    
+	    if(evt.getAxis().getLogicalId().equalsIgnoreCase("rx")){
+		    //if(evt.getValue() > deadZone || evt.getValue() < -deadZone){
+			xRotRActual = evt.getValue();
+		    //}else{
+			//xRotR = 0.0f;
+		    //}
+		}//break;
+		    //case "ry":
+		if(evt.getAxis().getLogicalId().equalsIgnoreCase("ry")){
+		    //if(evt.getValue() > deadZone || evt.getValue() < -deadZone){
+			yRotRActual = evt.getValue();
+		    //}else{
+			//yRotR = 0.0f;
+		    //}
+		}//break;
+		    //case "rz":
+		if(evt.getAxis().getLogicalId().equalsIgnoreCase("rz")){
+		    //if(evt.getValue() > deadZone || evt.getValue() < -deadZone){
+			zRotRActual = evt.getValue();
+		    //}else{
+			//zRotR = 0.0f;
+		    //}
+		}//break;
+		//}
+	    
+	}
+	
+	
 	if((evt.getAxis().getAxisId() == 2 && (evt.getValue() > deadZone || evt.getValue() < -deadZone))
 		|| (evt.getAxis().getAxisId() == 3 && (evt.getValue() > deadZone || evt.getValue() < -deadZone))){
 	    
@@ -228,7 +307,6 @@ public class Input implements AnalogListener, ActionListener, RawInputListener{
 		    //}
 		}//break;
 		//}
-	    
 	    rotation = new Vector3f(xRotR,yRotR,zRotR);
 	    //System.out.println("Rot Axis: " + evt.getAxis() + " " +  evt.getValue());
 	    //main.playerNode.rotate(
@@ -254,6 +332,35 @@ public class Input implements AnalogListener, ActionListener, RawInputListener{
 	    
 	}else{
 	    //rotation = new Vector3f(0,0,0);
+	    if(evt.getAxis().getLogicalId().equalsIgnoreCase("rx")){
+		    //if(evt.getValue() > deadZone || evt.getValue() < -deadZone){
+			//xRotL = evt.getValue();
+		    //}else{
+			xRotR = 0.0f;
+		    //}
+			//System.out.println("Moving X by " + evt.getValue());
+		}
+		      //  break;
+		    //case "y":
+		if(evt.getAxis().getLogicalId().equalsIgnoreCase("ry")){
+		    //if(evt.getValue() > deadZone || evt.getValue() < -deadZone){
+			//yRotL = evt.getValue();
+		    //}else{
+			yRotR = 0.0f;
+		    //}
+			//System.out.println("Moving Y by " + evt.getValue());
+		}
+		      //  break;
+		    //case "z":
+		if(evt.getAxis().getLogicalId().equalsIgnoreCase("rz")){
+		    //if(evt.getValue() > deadZone || evt.getValue() < -deadZone){
+			//zRotL = evt.getValue();
+		    //}else{
+			zRotR = 0.0f;
+		    //}
+			//System.out.println("Moving Z by " + evt.getValue());
+		}
+		rotation = new Vector3f(xRotR,yRotR,zRotR);
 	}
     }
 
@@ -285,7 +392,7 @@ public class Input implements AnalogListener, ActionListener, RawInputListener{
     Main main;
     InputManager inMan;
     Joystick pad;
-    float deadZone = 0.1f;
+    float deadZone = 0.2f;
 
     public Input(Main main){
 	this.main = main;
@@ -318,16 +425,11 @@ public class Input implements AnalogListener, ActionListener, RawInputListener{
 		break;
 	    case "speedBoost":
 		if(keyPressed){
+		    speedToggle = true;
+		    System.out.println("Speeding up");
 		}else{
-		    if(speedToggle){
-			movementSpeed = 5;
-			speedToggle = false;
-			System.out.println("Speeding up");
-		    }else{
-			movementSpeed = 1;
-			speedToggle = true;
-			System.out.println("Slowing down");
-		    }
+		    speedToggle = false;
+		    System.out.println("Slowing down");
 		}
 		break;
 	    case "anim":

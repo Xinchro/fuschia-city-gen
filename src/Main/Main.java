@@ -4,6 +4,11 @@ import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.animation.AnimEventListener;
 import com.jme3.app.SimpleApplication;
+import com.jme3.bullet.BulletAppState;
+import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
+import com.jme3.bullet.control.CharacterControl;
+import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.collision.CollisionResults;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
@@ -24,8 +29,8 @@ import java.util.Random;
 import java.util.logging.Level;
 
 /**
- * test
- * @author Walter Reis
+ *
+ * @author Xinchro
  */
 public class Main extends SimpleApplication implements AnimEventListener{
 
@@ -51,6 +56,7 @@ public class Main extends SimpleApplication implements AnimEventListener{
 	app.settings.setTitle("FUSCHIA - Full Ultra Speed Combat Harmony In Air");
 	app.settings.setWidth(800);
 	app.settings.setHeight(600);
+	app.settings.setFrameRate(60);
         app.start();
     }
 
@@ -68,10 +74,16 @@ public class Main extends SimpleApplication implements AnimEventListener{
     Player player;
     CameraNode camNode;
     
+    BulletAppState bulletAppState;
+
+    
     @Override
     public void simpleInitApp() {
 	//logger.setLevel(Level.OFF);
-	//this.
+	bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
+        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
+	
 	input = new Input(this);
 	input.initKeys();
 	java.util.logging.Logger.getLogger("").setLevel(Level.SEVERE);
@@ -124,9 +136,13 @@ public class Main extends SimpleApplication implements AnimEventListener{
 	camNode.lookAt(playerNode.getWorldTranslation(), Vector3f.UNIT_Y);
 	playerNode.attachChild(camNode);
 	//player.loadModel();
+	results = new CollisionResults();
 	
+	genNewRandomCity();
 	
     }
+    
+    CollisionResults results;
     
     public AnimChannel channel;
     public AnimChannel getChannel(){
@@ -137,14 +153,35 @@ public class Main extends SimpleApplication implements AnimEventListener{
 	return control;
     }
     Node playerNode;
-    
+    CharacterControl character;
+
     public void loadPlayerModel(){
 	
 	/** Load a model. Uses model and texture from jme3-test-data library! */ 
         playerNode = (Node) assetManager.loadModel("Models/Placeholder/Placeholder.j3o");
         Material mat_default = new Material( assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
         playerNode.setMaterial(mat_default);
+	playerNode.move(0, 10, 0);
         rootNode.attachChild(playerNode);
+	
+	CapsuleCollisionShape capsule = new CapsuleCollisionShape(3f, 4f);
+
+        character = new CharacterControl(capsule, 0.01f);
+	character.setUpAxis(1);
+        //model = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
+        //model.setLocalScale(0.5f);
+        playerNode.addControl(character);
+        character.setPhysicsLocation(new Vector3f(-140, 15, -10));
+	character.setFallSpeed(0);
+        rootNode.attachChild(playerNode);
+        bulletAppState.getPhysicsSpace().add(character);
+
+	
+	//Node physicsSphere2 = PhysicsTestHelper.createPhysicsTestNode(assetManager, physicsSphere.getControl(RigidBodyControl.class).getCollisionShape(), 1);
+        //playerNode.getControl(RigidBodyControl.class).setPhysicsLocation(new Vector3f(4, 8, 0));
+        rootNode.attachChild(playerNode);
+        //bulletAppState.getPhysicsSpace().add(playerNode);
+
 	
 	for(int i=0;i<playerNode.getChildren().size();i++){
 	    //System.out.println(player.getControl(i));
@@ -238,9 +275,9 @@ public class Main extends SimpleApplication implements AnimEventListener{
     //----------------------------------------
     //The 3 most important things to play with
     //----------------------------------------
-    float roadWidth = 10f;
-    int maxRoadSeperation = 100;
-    int maxRandHeight = 30;
+    float roadWidth = 100f;
+    int maxRoadSeperation = 1000;
+    int maxRandHeight = 300;
     
     Geometry roadGeom;
     Box roadPlane;
@@ -382,6 +419,13 @@ public class Main extends SimpleApplication implements AnimEventListener{
 	    
 	    if(buildingGeom!=null){
 		buildingGeom.setMaterial(mat);
+		
+		//Node physicsSphere2 = PhysicsTestHelper.createPhysicsTestNode(assetManager, physicsSphere.getControl(RigidBodyControl.class).getCollisionShape(), 1);
+		//buildingGeom.getControl(RigidBodyControl.class).setPhysicsLocation(new Vector3f(4, 8, 0));
+		rootNode.attachChild(buildingGeom);
+		//bulletAppState.getPhysicsSpace().add(buildingGeom);
+
+		
 		rootNode.attachChild(buildingGeom);
 		buildings.add(buildingGeom);
 		//System.out.println(buildings.size());
