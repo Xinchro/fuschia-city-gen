@@ -6,14 +6,13 @@ package Main;
  */
 public class Enemy {
 
-    String name;
-    int health, maxHealth;
+    private String name;
+    private int health, maxHealth;
     
     public Enemy(){
 	name = "defaultEnemyName";
 	health = 50;
 	maxHealth = health;
-    }
-    
+    }    
     
 }

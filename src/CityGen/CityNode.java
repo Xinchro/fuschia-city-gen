@@ -16,25 +16,25 @@ public class CityNode {
 
 	BUILDING, PROP, ROAD, GRASS, AIR
     }
-    float weightRoad;
-    float weightBuilding;
-    float weightProp;
-    float weightGrass;
-    float weightAir;
-    float[] globalWeights;
-    Vector3f pos;
-    Type type;
-    ColorRGBA color;
-    ColorRGBA white = new ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f);
-    ColorRGBA black = new ColorRGBA(0.0f, 0.0f, 0.0f, 1.0f);
-    ColorRGBA red = new ColorRGBA(1.0f, 0.0f, 0.0f, 1.0f);
-    ColorRGBA blue = new ColorRGBA(0.0f, 0.0f, 1.0f, 1.0f);
-    ColorRGBA green = new ColorRGBA(0.0f, 1.0f, 0.0f, 1.0f);
-    CityNode underNode;
-    ArrayList<CityNode> surroundingNodes = new ArrayList<CityNode>();
-    float[] weightsArr = new float[5];
+    private float weightRoad;
+    private float weightBuilding;
+    private float weightProp;
+    private float weightGrass;
+    private float weightAir;
+    private float[] globalWeights;
+    private Vector3f pos;
+    private Type type;
+    private ColorRGBA color;
+    private ColorRGBA white = new ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f);
+    private ColorRGBA black = new ColorRGBA(0.0f, 0.0f, 0.0f, 1.0f);
+    private ColorRGBA red = new ColorRGBA(1.0f, 0.0f, 0.0f, 1.0f);
+    private ColorRGBA blue = new ColorRGBA(0.0f, 0.0f, 1.0f, 1.0f);
+    private ColorRGBA green = new ColorRGBA(0.0f, 1.0f, 0.0f, 1.0f);
+    private CityNode underNode;
+    private ArrayList<CityNode> surroundingNodes = new ArrayList<CityNode>();
+    private float[] weightsArr = new float[5];
     
-    ArrayList<CityNode> buildingBlocks = new ArrayList<CityNode>();
+    private ArrayList<CityNode> buildingBlocks = new ArrayList<CityNode>();
 
     public CityNode() {
 	setDefaultWeights();
@@ -44,7 +44,6 @@ public class CityNode {
 	type = null;
 	pos = new Vector3f(0.0f, 0.0f, 0.0f);
 	color = white;
-	//doWeights();
     }
 
     public CityNode(Vector3f pos) {
@@ -54,14 +53,13 @@ public class CityNode {
 
 	type = null;
 	this.pos = pos;
-	//doWeights();
 	//System.out.println("Node(vec3f) - new node at " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
     }
     
     void setDefaultWeights(){
 	weightRoad = 0.4f;
 	weightBuilding = 0.5f;
-	weightProp = 0.4f;
+	weightProp = .5f;
 	weightGrass = 0.2f;
 	weightAir = 0.1f;
     }
@@ -88,10 +86,10 @@ public class CityNode {
 	weightsArr[2] = weightProp;
 	weightsArr[3] = weightGrass;
 	weightsArr[4] = weightAir;
+        normalizeWeights();
     }
 
     void normalizeWeights() {
-	//int numberOfWeights = 5;
 	float roadPercent = 0;
 	float buildingPercent = 0;
 	float propPercent = 0;
@@ -126,12 +124,12 @@ public class CityNode {
 	
     }
     
-    boolean edge = false;
+    private boolean edge = false;
     public void setCityEdge(boolean edge){
 	this.edge = edge;
     }
 
-    boolean roadReWeighted = false;
+    private boolean roadReWeighted = false;
     
     public void doWeights() {
 
@@ -142,18 +140,6 @@ public class CityNode {
 	fillWeightArray();
 
 	//System.out.println("Node.doWeights - float: " + value);
-
-	//globalWeights[0] = (1.0f/(0.5f+0.4f+0.3f+0.2f+0.1f))*globalWeights[0];
-	//globalWeights[1] = (1.0f/(0.5f+0.4f+0.3f+0.2f+0.1f))*globalWeights[1];
-	//globalWeights[2] = (1.0f/(0.5f+0.4f+0.3f+0.2f+0.1f))*globalWeights[2];
-	//globalWeights[3] = (1.0f/(0.5f+0.4f+0.3f+0.2f+0.1f))*globalWeights[3];
-	//globalWeights[4] = (1.0f/(0.5f+0.4f+0.3f+0.2f+0.1f))*globalWeights[4]; 
-
-	//weightBuilding = globalWeights[0];
-	//weightProp = globalWeights[1];
-	//weightRoad = globalWeights[2];
-	//weightGrass = globalWeights[3];
-	//weightAir = globalWeights[4];
 
 	float dist = Math.abs(weightsArr[0] - 1);
 	float tempDist = 0;
@@ -177,13 +163,7 @@ public class CityNode {
 	    }
 	}
 	if((tempRoadList.size() == 2 )
-		//|| tempRoadList.size() == 1)
 		&& pos.getY() == 0){
-//	    weightRoad *= 100;
-//	    if(!roadReWeighted){
-//		roadReWeighted = true;
-//		doWeights();
-//	    }
 	    index = 0;
 	}
 	
@@ -191,11 +171,6 @@ public class CityNode {
 		&& pos.getY() == 0){
 	    index = 0;
 	}
-
-//	if (weightsArr[index] == 0.0f) {
-//	    System.out.println("CityNode.doWeights - re-doing weights");
-//	    doWeights();
-//	}
 
 	//System.out.println("CityNode.doWeights - setting type ");
 	//System.out.println("CityNode.doWeights - value " + value);
@@ -227,37 +202,6 @@ public class CityNode {
 		type = Type.AIR;
 		break;
 	}
-
-//	if (value > 0.8f && value <= 1.0f) {
-//	    type = Type.AIR;
-//	}
-//	if (value > 0.6f && value <= 0.8f) {
-//	    type = Type.GRASS;
-//	}
-//	if (value > 0.4f && value <= 0.6f) {
-//	    type = Type.ROAD;
-//	}
-//	if (value > 0.2f && value <= 0.4f) {
-//	    type = Type.PROP;
-//	}
-//	if (value >= 0.0f && value <= 0.2f) {
-//	    type = Type.BUILDING;
-//	}
-//	if(value > 0.8f && value <= 1.0f){
-//	    type = Type.AIR;
-//	}
-//	if(value > 0.6f && value <= 0.8f){
-//	    type = Type.GRASS;
-//	}
-//	if(value > 0.4f && value <= 0.6f){
-//	    type = Type.ROAD;
-//	}
-//	if(value > 0.2f && value <= 0.4f){
-//	    type = Type.PROP;
-//	}
-//	if(value >= 0.0f && value <= 0.2f){
-//	    type = Type.BUILDING;
-//	}
 
 	checkType();
     }
@@ -329,7 +273,6 @@ public class CityNode {
 
     void setUnderNode(CityNode underNode) {
 	this.underNode = underNode;
-	//doWeights();
     }
     
     void addBuildingBlocks(CityNode node){
@@ -365,7 +308,6 @@ public class CityNode {
 		    underNode = surroundingNodes.get(i);
 		    //System.out.println("CityNode.setUnderNode - undernode set " + underNode.getType());
 		} else {
-		    //underNode = null;
 		}
 	    }
 	} else {
@@ -376,7 +318,7 @@ public class CityNode {
 	}
     }
     
-    boolean generated = false;
+    private boolean generated = false;
 
     ArrayList<CityNode> getSurroundingNodes() {
 	return surroundingNodes;
@@ -394,7 +336,6 @@ public class CityNode {
 		if(surroundingNodes.get(i).getType().equals(this.type)
 			&& !buildingBlocks.contains(surroundingNodes.get(i))){
 		    buildingBlocks.add(surroundingNodes.get(i));
-		    //surroundingNodes.get(i).checkForBrethren();
 		    checkNodeForSiblings(surroundingNodes.get(i));
 		    //System.out.println("CityNode.checkForBrethren - match! " + type + " to " + surroundingNodes.get(i).getType());
 		}
@@ -472,8 +413,8 @@ public class CityNode {
 	}
     }
     
-    ArrayList<Geometry> surroundingNodeBlocks = new ArrayList<Geometry>();
-    Geometry block = null;
+    private ArrayList<Geometry> surroundingNodeBlocks = new ArrayList<Geometry>();
+    private Geometry block = null;
     
     void setBlock(Geometry block){
 	this.block = block;

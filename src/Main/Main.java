@@ -5,9 +5,7 @@ import com.jme3.animation.AnimControl;
 import com.jme3.animation.AnimEventListener;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
-import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
-import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.collision.CollisionResults;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
@@ -45,6 +43,7 @@ public class Main extends SimpleApplication implements AnimEventListener{
     }
     
     public static void main(String[] args) {
+	//setup basic game settings
         Main app = new Main();
 	AppSettings settings = new AppSettings(true);
 	app.setPauseOnLostFocus(false);
@@ -60,60 +59,47 @@ public class Main extends SimpleApplication implements AnimEventListener{
         app.start();
     }
 
-   //private static final Logger logger = Logger.getLogger(Main.class.getName());
+    private DirectionalLight sun = new DirectionalLight();
+    private DirectionalLight sun2 = new DirectionalLight();
     
-//    public Main(int cSize, int rWidth, int mSep, int mHeight){
-//	simpleInitApp(cSize, rWidth, mSep, mHeight);
-//    }
+    private Material mat, mat1;
+    private Input input;
+    private Player player;
+    private CameraNode camNode;
     
-    DirectionalLight sun = new DirectionalLight();
-    DirectionalLight sun2 = new DirectionalLight();
+    public CameraNode camNode(){
+	return camNode;
+    }
     
-    Material mat, mat1;
-    Input input;
-    Player player;
-    CameraNode camNode;
-    
-    BulletAppState bulletAppState;
+    private BulletAppState bulletAppState;
 
     
     @Override
     public void simpleInitApp() {
 	//logger.setLevel(Level.OFF);
-	bulletAppState = new BulletAppState();
-        stateManager.attach(bulletAppState);
-        bulletAppState.getPhysicsSpace().enableDebug(assetManager);
 	
 	input = new Input(this);
 	input.initKeys();
 	java.util.logging.Logger.getLogger("").setLevel(Level.SEVERE);
-	
-//	TestCityGenGUI gui = new TestCityGenGUI(this);
-//	gui.setVisible(true);
 	
 	flyCam.setMoveSpeed(200);
 	
 	cam.setFrustumNear(1f);
 	cam.setFrustumFar(5000f);
 	
-//	DirectionalLight sun = new DirectionalLight();
+	//add some lights for the shadows
 	sun.setDirection((new Vector3f(-0.5f, -0.5f, -0.5f)).normalizeLocal());
 	sun.setColor(ColorRGBA.White);
 	rootNode.addLight(sun); 
-//	DirectionalLight sun2 = new DirectionalLight();
 	sun2.setDirection((new Vector3f(-0.5f, 0.5f, -0.5f)).normalizeLocal());
 	sun2.setColor(ColorRGBA.White);
 	rootNode.addLight(sun2);
 	AmbientLight ambLight = new AmbientLight();
-	//sun2.setDirection((new Vector3f(-0.5f, 0.5f, -0.5f)).normalizeLocal());
 	ambLight.setColor(ColorRGBA.White);
 	rootNode.addLight(ambLight); 
 	rootNode.setShadowMode(RenderQueue.ShadowMode.Cast);
-//	DirectionalLight sun3 = new DirectionalLight();
-//	sun3.setDirection((new Vector3f(0.5f, 0.5f, 0.5f)).normalizeLocal());
-//	sun3.setColor(ColorRGBA.White);
-//	rootNode.addLight(sun3); 
 	
+	//instanciate the materials
 	mat = new Material( assetManager, "Common/MatDefs/Light/Lighting.j3md");
 
 	mat.getAdditionalRenderState().setWireframe(false);
@@ -125,24 +111,22 @@ public class Main extends SimpleApplication implements AnimEventListener{
 	mat1.getAdditionalRenderState().setWireframe(false);
 	mat1.getAdditionalRenderState().setFaceCullMode(FaceCullMode.Back);
 	
-	//generateCity(1);
-	
+	//reference cube
 	addCube();
 	
 	player = new Player();
 	loadPlayerModel();
 	camNode = new CameraNode("Camera Node", this.getCamera());
 	camNode.setLocalTranslation(0.0f, 20.0f, -50.0f);
+	//make the camera look at the player
 	camNode.lookAt(playerNode.getWorldTranslation(), Vector3f.UNIT_Y);
 	playerNode.attachChild(camNode);
-	//player.loadModel();
-	results = new CollisionResults();
 	
 	genNewRandomCity();
 	
     }
     
-    CollisionResults results;
+    private CollisionResults results;
     
     public AnimChannel channel;
     public AnimChannel getChannel(){
@@ -152,45 +136,31 @@ public class Main extends SimpleApplication implements AnimEventListener{
     public AnimControl getControl(){
 	return control;
     }
-    Node playerNode;
-    CharacterControl character;
+    private Node playerNode;
+    private CharacterControl character;
+    
+    public Node playerNode(){
+	return playerNode;
+    }
 
+    /**
+     * Loads an arbitrary model to the player node
+     */
     public void loadPlayerModel(){
 	
-	/** Load a model. Uses model and texture from jme3-test-data library! */ 
         playerNode = (Node) assetManager.loadModel("Models/Placeholder/Placeholder.j3o");
         Material mat_default = new Material( assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
         playerNode.setMaterial(mat_default);
 	playerNode.move(0, 10, 0);
         rootNode.attachChild(playerNode);
 	
-	CapsuleCollisionShape capsule = new CapsuleCollisionShape(3f, 4f);
-
-        character = new CharacterControl(capsule, 0.01f);
-	character.setUpAxis(1);
-        //model = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
-        //model.setLocalScale(0.5f);
-        playerNode.addControl(character);
-        character.setPhysicsLocation(new Vector3f(-140, 15, -10));
-	character.setFallSpeed(0);
-        rootNode.attachChild(playerNode);
-        bulletAppState.getPhysicsSpace().add(character);
-
-	
-	//Node physicsSphere2 = PhysicsTestHelper.createPhysicsTestNode(assetManager, physicsSphere.getControl(RigidBodyControl.class).getCollisionShape(), 1);
-        //playerNode.getControl(RigidBodyControl.class).setPhysicsLocation(new Vector3f(4, 8, 0));
-        rootNode.attachChild(playerNode);
-        //bulletAppState.getPhysicsSpace().add(playerNode);
-
-	
-	for(int i=0;i<playerNode.getChildren().size();i++){
+	//for(int i=0;i<playerNode.getChildren().size();i++){
 	    //System.out.println(player.getControl(i));
-	}
+	//}
 	
 	Node n1 = (Node) playerNode.getChild("Armature");
 	Node n2 = (Node) playerNode.getChild("Cube");
 
-	//control = new AnimControl();
 	control = n2.getControl(AnimControl.class);
 	control.addListener(this);
 	channel = control.createChannel();
@@ -198,24 +168,29 @@ public class Main extends SimpleApplication implements AnimEventListener{
 	
     }
     
+    /**
+     * Cube added to have a reference for when flying around
+     */
     public void addCube(){
-	/** Translucent/transparent cube. Uses Texture from jme3-test-data library! */
 	Box boxshape3 = new Box(Vector3f.ZERO, 1f,1f,1f);
 	Geometry cube_translucent = new Geometry("translucent cube", boxshape3);
 	Material mat_tt = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-	//mat_tt.setTexture("ColorMap", assetManager.loadTexture("Textures/ColoredTex/Monkey.png"));
 	mat_tt.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
 	cube_translucent.setMaterial(mat_tt); 
 	rootNode.attachChild(cube_translucent); 
     }
     
-    int citySize;
+    private int citySize;
     
+    /**
+     * Clears everything and generates a new city
+     * 
+     * @param size
+     * @param width
+     * @param seperation
+     * @param maxHeight 
+     */
     public void generateNew(int size, float width, int seperation, int maxHeight){
-	//rootNode.detachAllChildren();
-	
-	//rootNode.addLight(sun); 
-	//rootNode.addLight(sun2); 
 	
 //	System.out.println("roadsX size: " + roadsX.size());
 	for(int i=0;i<roadsX.size();i++){
@@ -242,46 +217,47 @@ public class Main extends SimpleApplication implements AnimEventListener{
 	
 	//System.out.println("rootNode clear " + rootNode.getQuantity());
 	
-	//roadsX = new ArrayList<Geometry>();
-	//roadsZ = new ArrayList<Geometry>();
-	//buildings = new ArrayList<Geometry>();
-	
 	roadWidth = width;
 	maxRoadSeperation = seperation;
-	//maxRandHeight = maxHeight;
 	citySize = size;
 	
 	
 	generateCity(citySize);
     }
     
+    /**
+     * Generates a city of the given size.
+     * 
+     * @param citySize 
+     */
     public void generateCity(int citySize){
-	//this.citySize = citySize;
-//	Box roadPlane = new Box(new Vector3f(0, 0, 0), citySize*125f, 0, roadWidth);
-//	Geometry roadGeom = new Geometry("Plane", roadPlane);
-//	roadGeom.setLocalTranslation(0, 0, 0);		
-//
-//	roadGeom.setMaterial(mat1);
-//
-//	rootNode.attachChild(roadGeom);
 	genRoads(citySize+1);
 	genBuildings(citySize+1);
     }
     
-    ArrayList<Geometry> roadsX = new ArrayList<Geometry>();
-    ArrayList<Geometry> roadsZ = new ArrayList<Geometry>();
-    ArrayList<Geometry> buildings = new ArrayList<Geometry>();;
+    private ArrayList<Geometry> roadsX = new ArrayList<Geometry>();
+    private ArrayList<Geometry> roadsZ = new ArrayList<Geometry>();
+    private ArrayList<Geometry> buildings = new ArrayList<Geometry>();
+    
+    public ArrayList<Geometry> buildings(){
+	return buildings;
+    }
     
     //----------------------------------------
     //The 3 most important things to play with
     //----------------------------------------
-    float roadWidth = 100f;
-    int maxRoadSeperation = 1000;
-    int maxRandHeight = 300;
+    private float roadWidth = 100f;
+    private int maxRoadSeperation = 1000;
+    private int maxRandHeight = 300;
     
-    Geometry roadGeom;
-    Box roadPlane;
+    private Geometry roadGeom;
+    private Box roadPlane;
     
+    /**
+     * Generates the number of roads in a square grid.
+     * 
+     * @param citySize 
+     */
     public void genRoads(int citySize){
 		
 	int roadXPos = 0;	
@@ -291,22 +267,15 @@ public class Main extends SimpleApplication implements AnimEventListener{
 	
 	boolean secondPass = false;
 	
-//	roadsX.clear();
-//	roadsZ.clear();
 	
 	
 	for(int j=0;j<2;j++){
 	    
 	    for(int i=0;i<citySize;i++){
-		//if(roadGeom != null){
-		//rootNode.detachChild(roadGeom);}
-		//roadGeom = null;
 		roadSeperation = (float) new Random().nextInt(maxRoadSeperation);
 		while(roadSeperation<=roadWidth*2){
 		    roadSeperation = (float) new Random().nextInt(maxRoadSeperation);
 		}
-		//roadPlane = null;
-		//roadGeom = null;
 		roadPlane = new Box(new Vector3f(0, 0, 0), citySize*125f, 0, roadWidth);
 		roadGeom = new Geometry("Plane", roadPlane);
 		roadGeom.setLocalTranslation(roadXPos, 0, roadZPos);		
@@ -317,6 +286,7 @@ public class Main extends SimpleApplication implements AnimEventListener{
 
 
 
+		//vertical vs horizontal
 		if(secondPass){
 		    roadGeom.setLocalRotation(new Quaternion(0,1,0,1));
 		    roadXPos+=roadSeperation;
@@ -342,9 +312,14 @@ public class Main extends SimpleApplication implements AnimEventListener{
 	return scale;
     }
     
-    Geometry buildingGeom;
-    Box buildingBox;
+    private Geometry buildingGeom;
+    private Box buildingBox;
     
+    /**
+     * Generates the buildings inbetween the roads.
+     * 
+     * @param citySize 
+     */
     public void genBuildings(int citySize){
 	int xPos = 0;	
 	int yPos = 0;
@@ -353,7 +328,6 @@ public class Main extends SimpleApplication implements AnimEventListener{
 	
 	int roadXTick = -1;
 	int roadZTick = 0;
-//	buildings.clear();
     
 	
 	for(int i=0;i<Math.pow(citySize, 2);i++)
@@ -373,8 +347,6 @@ public class Main extends SimpleApplication implements AnimEventListener{
 	    if(roadXTick >= citySize){
 		roadZTick++;
 		roadXTick=0;
-		//Box b = new Box(new Vector3f(0, 0, 0), .5f, ranHeight, .5f);
-		//sets box to scale to fit gaps in roads
 		buildingBox = null;
 		if(roadXTick < roadsX.size()-1 && roadZTick < roadsZ.size()-1){
 		buildingBox = new Box(new Vector3f(0, 0, 0), (calcScale(roadsX.get(roadXTick).getWorldTranslation().getX(), roadsX.get(roadXTick+1).getWorldTranslation().getX())/2)-roadWidth,
@@ -412,23 +384,12 @@ public class Main extends SimpleApplication implements AnimEventListener{
 		}
 	    }
 
-//	    Material mat = new Material( assetManager, "Common/MatDefs/Light/Lighting.j3md");
-//
-//	    mat.getAdditionalRenderState().setWireframe(false);
-//	    mat.getAdditionalRenderState().setFaceCullMode(FaceCullMode.Back);	    
 	    
 	    if(buildingGeom!=null){
 		buildingGeom.setMaterial(mat);
 		
-		//Node physicsSphere2 = PhysicsTestHelper.createPhysicsTestNode(assetManager, physicsSphere.getControl(RigidBodyControl.class).getCollisionShape(), 1);
-		//buildingGeom.getControl(RigidBodyControl.class).setPhysicsLocation(new Vector3f(4, 8, 0));
-		rootNode.attachChild(buildingGeom);
-		//bulletAppState.getPhysicsSpace().add(buildingGeom);
-
-		
 		rootNode.attachChild(buildingGeom);
 		buildings.add(buildingGeom);
-		//System.out.println(buildings.size());
 	    }
 
 	    
@@ -442,23 +403,24 @@ public class Main extends SimpleApplication implements AnimEventListener{
 	}
     }
     
-    int testSize;
-    int testMaxH;
-    float testRoadWidth;
-    int testRoadSep;
+    private int testSize;
+    private int testMaxH;
+    private float testRoadWidth;
+    private int testRoadSep;
+    /**
+     * Generate a new vity with random parameters
+     */
     public void genNewRandomCity(){
 	newTick = 0;
 	testSize = new Random().nextInt(20)+1;
 	testMaxH = new Random().nextInt(50)+30;
 	testRoadWidth = new Random().nextInt(20)+10;
 	testRoadSep = (int)((new Random().nextInt(20)) + testRoadWidth*2 + 100);
-	//rootNode.detachAllChildren();
 	generateNew(testSize,testRoadWidth,testRoadSep,testMaxH);
-	//generateNew(1,testRoadWidth,testRoadSep,testMaxH);
 	//System.out.println("New tick");
     }
 
-    int newTick = 0;
+    private int newTick = 0;
     
     @Override
     public void simpleUpdate(float tpf) {

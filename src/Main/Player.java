@@ -3,23 +3,25 @@ package Main;
 import com.jme3.scene.Spatial;
 
 /**
+ * 
+ * This class was taken from another project (For CI328)
  *
  * @author Xinchro
  */
 public class Player {
     
-    int health = 10;
-    int maxHealth = health;
-    String name;
-    int pwr = 5;
-    int dex = 3;
-    int wis = 4;
-    boolean dead;
-    Spatial model;
-    int level = 1;
-    int experience = 0;
-    int levelCap = 2;
-    int statPoints = 10;
+    private int health = 10;
+    private int maxHealth = health;
+    private String name;
+    private int pwr = 5;
+    private int dex = 3;
+    private int wis = 4;
+    private boolean dead;
+    private Spatial model;
+    private int level = 1;
+    private int experience = 0;
+    private int levelCap = 2;
+    private int statPoints = 10;
     
     public Player(){
 	name = "defaultPlayerName";

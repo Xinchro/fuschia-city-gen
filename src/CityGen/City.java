@@ -32,19 +32,18 @@ import java.util.logging.Level;
  */
 public class City extends SimpleApplication implements RawInputListener {
 
-    float globalWeightBuilding = (1.0f / (0.5f + 0.4f + 0.3f + 0.2f + 0.1f)) * 0.5f;
-    float globalWeightProp = (1.0f / (0.5f + 0.4f + 0.3f + 0.2f + 0.1f)) * 0.4f;
-    float globalWeightRoad = (1.0f / (0.5f + 0.4f + 0.3f + 0.2f + 0.1f)) * 0.3f;
-    float globalWeightGrass = (1.0f / (0.5f + 0.4f + 0.3f + 0.2f + 0.1f)) * 0.2f;
-    float globalWeightAir = (1.0f / (0.5f + 0.4f + 0.3f + 0.2f + 0.1f)) * 0.1f;
-    //float globals[] = new float[5];
-    float[] globals = {globalWeightBuilding, globalWeightProp, globalWeightRoad, globalWeightGrass, globalWeightAir};
-    int width, length, height;
-    ArrayList<CityNode> nodes = new ArrayList<CityNode>();
-    ArrayList<CityNode> renderableNodes = new ArrayList<CityNode>();
-    ArrayList<Geometry> nodeCubes = new ArrayList<Geometry>();
-    ArrayList<Geometry> renderableCubes = new ArrayList<Geometry>();
-    boolean closed = false;
+    private float globalWeightBuilding = (1.0f / (0.5f + 0.4f + 0.3f + 0.2f + 0.1f)) * 0.5f;
+    private float globalWeightProp = (1.0f / (0.5f + 0.4f + 0.3f + 0.2f + 0.1f)) * 0.4f;
+    private float globalWeightRoad = (1.0f / (0.5f + 0.4f + 0.3f + 0.2f + 0.1f)) * 0.3f;
+    private float globalWeightGrass = (1.0f / (0.5f + 0.4f + 0.3f + 0.2f + 0.1f)) * 0.2f;
+    private float globalWeightAir = (1.0f / (0.5f + 0.4f + 0.3f + 0.2f + 0.1f)) * 0.1f;
+    private float[] globals = {globalWeightBuilding, globalWeightProp, globalWeightRoad, globalWeightGrass, globalWeightAir};
+    private int width, length, height;
+    private ArrayList<CityNode> nodes = new ArrayList<CityNode>();
+    private ArrayList<CityNode> renderableNodes = new ArrayList<CityNode>();
+    private ArrayList<Geometry> nodeCubes = new ArrayList<Geometry>();
+    private ArrayList<Geometry> renderableCubes = new ArrayList<Geometry>();
+    private boolean closed = false;
 
     public static void main(String[] args) {
 	City app = new City();
@@ -80,71 +79,51 @@ public class City extends SimpleApplication implements RawInputListener {
 	//flyCam.setEnabled(false);
 	cam.setLocation(new Vector3f(width + 20.0f, height + 10.0f, length + 20.0f));
 	cam.lookAt(new Vector3f(width / 2, 0, length / 2), Vector3f.UNIT_Y);
-	//throw new UnsupportedOperationException("Not supported yet.");
-	/**
-	 * Translucent/transparent cube. Uses Texture from jme3-test-data
-	 * library!
-	 */
-//	Box boxshape3 = new Box(Vector3f.ZERO, 1f,1f,1f);
-//	Geometry cube_translucent = new Geometry("translucent cube", boxshape3);
-//	Material mat_tt = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-//	//mat_tt.setTexture("ColorMap", assetManager.loadTexture("Textures/ColoredTex/Monkey.png"));
-//	mat_tt.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
-//	mat_tt.setColor("Color", new ColorRGBA(1f,1f,1f, 1f));
-//	cube_translucent.setMaterial(mat_tt); 
-//	rootNode.attachChild(cube_translucent); 
 	viewPort.setBackgroundColor(ColorRGBA.Gray);
 	cam.setFrustumFar(100);
 	executor.submit(doNodes);
-	//addSurroundingNodes();
-	//nodeLoop();
-
-	//GeometryBatchFactory fact = new GeometryBatchFactory();//.optimize(rootNode);
     }
 
     public City() {
 	CityNode node = new CityNode();
 	node.setGlobals(globals);
 
-	width = 50;
-	length = width;
-	height = 5;
+        //**************************
+        //**************************
+	width = 10;
+	length =100;
+	height = 3;
+        //**************************
+        //**************************
     }
-    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(10);
+    private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(10);
 
     //@Override
     public void destroy() {
-	//executor.shutdown();
 	closed = true;
 	executor.shutdownNow();
-	//executor.purge();
-	//this.destroy();
 	super.destroy();
     }
 
     
-    boolean finished = false;
+    private boolean finished = false;
     
     @Override
     public void simpleUpdate(float tpf) {
 	super.simpleUpdate(tpf);
 
-	//executor.submit(doNodes);
 	rootNode.detachAllChildren();
 	for (int i = 0; i < renderableCubes.size()-1; i++) {
-	    if(renderableNodes.get(i).type == CityNode.Type.AIR){
+	    if(renderableNodes.get(i).getType() == CityNode.Type.AIR){
 		renderableCubes.remove(i);
 		renderableNodes.remove(i);
 	    }else{
-		//if(finished){
 		    rootNode.attachChild(renderableCubes.get(i));
-		    //reSkinNode(renderableCubes.get(i));
-		//}
 	    }
 	}
 	
 	setDebugTextX(String.valueOf(x));
-	setDebugTextY(String.valueOf(y));
+	setDebugTextY(String.valueOf(y));
 	setDebugTextZ(String.valueOf(z));
 	
 	if(highBros){
@@ -154,29 +133,6 @@ public class City extends SimpleApplication implements RawInputListener {
 	}else{
 	    resetNodeScales();
 	}
-	//GeometryBatchFactory.optimize(rootNode);
-
-//	if(y<height){
-//	    if(x<width){
-//		if(z<length){
-//		    Node node = new Node(new Vector3f(x, y, z));
-//		    node.setUnderNode(getSurroundingNode(
-//			    new Vector3f(node.getPos().getX(), node.getPos().getY()-1, node.getPos().getZ())));
-//		    makeCubeAt(node.getPos(), node.getType());
-//		    nodes.add(node);
-//		    nodes.trimToSize();
-//		    z++;
-//		    //System.out.println("City.simpleUpdate - z tick");
-//		}else{
-//		    z = 0;
-//		    x++;
-//		}
-//	    }else{
-//		x = 0;
-//		y++;
-//	    }
-//	}
-
     }
     
     void reSkinNode(Geometry nodeCube){
@@ -184,7 +140,6 @@ public class City extends SimpleApplication implements RawInputListener {
 	CityNode.Type type = CityNode.Type.AIR;
 	
 	for(int i=0;i<nodes.size();i++){
-	    //if(nodes.get(i).getPos().distance(clickedGeo.getWorldTranslation())==0){
 	    if(nodes.get(i).getBlock().getWorldTranslation().getX()==nodeCube.getWorldTranslation().getX()
 		    && nodes.get(i).getBlock().getWorldTranslation().getY()==nodeCube.getWorldTranslation().getY()
 		    && nodes.get(i).getBlock().getWorldTranslation().getZ()==nodeCube.getWorldTranslation().getZ()){
@@ -216,26 +171,20 @@ public class City extends SimpleApplication implements RawInputListener {
 	}
     }
     
-    float x = 0, y = 0, z = 0;
+    private float x = 0, y = 0, z = 0;
     
     private Callable doNodes = new Callable() {
-	//return this;
 	@Override
 	public String call() {
 	    System.out.println("City.doNodes - making city");
 	    finished = false;
 
 	    
-	    //enqueue(
-	    //new Callable(){
-	    //public String call(){
 	    while (y < height && !closed) {
 		while (x < width && !closed) {
 		    while (z < length && !closed) {
 
 			CityNode node = new CityNode(new Vector3f(x, y, z));
-//			node.setUnderNode(getSurroundingNode(
-//				new Vector3f(node.getPos().getX(), node.getPos().getY() - 1, node.getPos().getZ())));
 
 			if((x == 0 || x==width-1)
 				||(z == 0 || z ==length-1)){
@@ -244,7 +193,7 @@ public class City extends SimpleApplication implements RawInputListener {
 			node.setSurroundingNodes(getSurroundingNodes(node));
 			nodes.add(node);
 			node.setBlock(makeCubeAt(node.getPos(), node.getType()));   
-			if(node.getType() != node.type.AIR){
+			if(node.getType() != node.getType().AIR){
 			    renderableNodes.add(node);
 			}
 			nodes.trimToSize();
@@ -252,15 +201,9 @@ public class City extends SimpleApplication implements RawInputListener {
 			z++;
 			//System.out.println("City.simpleUpdate - pos: " +x+" "+y+" "+z);
 			//System.out.println("City.simpleUpdate - z tick");
-			//}else{
-			//z = 0;
-			//x++;
 		    }
 		    x++;
 		    z = 0;
-		    //}else{
-		    //x = 0;
-		    //y++;
 		}
 		ArrayList<CityNode> tempNodeArr = new ArrayList<CityNode>();
 		for(int a=0;a<nodes.size();a++){
@@ -291,14 +234,12 @@ public class City extends SimpleApplication implements RawInputListener {
 		}
 		y++;
 		x = 0;
-		try{
+		//try{
 		    //Thread.sleep(1000);
-		}catch(Exception e){
+		//}catch(Exception e){
 
-		}
+		//}
 	    }
-	    //return "a";
-	    //}});
 	    if(enableBrethren){
 		for(int i=0;i<nodes.size();i++){
 		    if(!closed){
@@ -316,10 +257,6 @@ public class City extends SimpleApplication implements RawInputListener {
 //	    }
 //	    System.out.println("City.doNodes - sur nodes " + nodes.get(nodes.size()/2).getSurroundingNodes());
 
-//	    for(int i=0;i<nodes.size();i++){
-//		nodes.get(i).setSurroundingNodes(getSurroundingNodes(nodes.get(i)));
-//		//nodes.get(i).checkForBrethren();
-//	    }
 	    if(enableBrethren){
 		for(int i=0;i<nodes.size();i++){
 		    if(!closed){
@@ -328,8 +265,6 @@ public class City extends SimpleApplication implements RawInputListener {
 		}
 	    }
 	    
-	    //executor.shutdown();
-	    //executor.purge();
 	    System.out.print("City.doNodes - arrays: ");
 	    System.out.print(" renderableNodes " + renderableNodes.size());
 	    System.out.print(" renderableCubes " + renderableCubes.size());
@@ -416,184 +351,6 @@ public class City extends SimpleApplication implements RawInputListener {
 	}
 	
 	
-//	for (int i = 0; i < nodes.size(); i++) {
-//	    if (closed) {
-//		break;
-//	    }
-//	    tempNode = nodes.get(i);
-//	    tempPos = tempNode.getPos();
-//
-//	    
-//	    //System.out.println("City.getSurroundingNodes - adding to" + nodePos);
-//	    
-//	    //would normally be 27, for the 27 nodes can "only check" 18
-//	    //but 3 nodes (-1,-1,-1) (1,1,1) are repeated 3 times
-//	    //also should not include itself (0,0,0) (1 of the 3 mentioned above)
-//	    
-//	    //map for nodes checking
-//	    //(-1,-1,-1) (0,-1,-1) (1,-1,-1) (1 to 3)
-//	    //(-1,-1,-1) (-1,0,-1) (-1,1,-1) (4 to 6)
-//	    //(-1,-1,-1) (-1,-1,0) (-1,-1,1) (7 to 9)
-//	    
-//	    //(-1,0,0) (0,0,0) (1,0,0) (10 to 12)
-//	    //(0,-1,0) (0,0,0) (0,1,0) (13 to 15)
-//	    //(0,0,-1) (0,0,0) (0,0,1) (16 to 18)
-//	    
-//	    //(-1,1,1) (0,1,1) (1,1,1) (19 to 21)
-//	    //(1,-1,1) (1,0,1) (1,1,1) (21 to 24)
-//	    //(1,1,-1) (1,1,0) (1,1,1) (25 to 27)
-//	    
-//	    //specially added:
-//	    //(-1,-1,-1) (0,0,0) (1,1,1) (makes total 21) (stop adding itself! (0,0,0))
-//	    //(0,-1,1) (-1,0,1) (-1,1,0) (makes total 24)
-//	    //(0,1,-1) (1,0,-1) (1,-1,0) (makes total 27) (26 without itself)
-//	    
-//	    for (int j = 0; j < 27; j++) {
-//		if (closed) {
-//		    break;
-//		}
-//		//System.out.println("City.getSurroundingNodes - j " + j + " " + "jmod3 " + ((j % 3) - 1));
-//		if (j <= 2) {
-//		    tempX = (j % 3) - 1;
-//		    tempY = -1;
-//		    tempZ = -1;
-//		    //System.out.println("1 to 3");
-////		    System.out.println("City.getSurroundingNodes - pos offset " + tempX
-////			    + " "
-////			    + tempY
-////			    + " " 
-////			    + tempZ
-////			    + " ");
-//		} else if (j <= 5) {
-//		    tempX = -1;
-//		    tempY = (j % 3) - 1;
-//		    tempZ = -1;
-//		    //System.out.println("4 to 6");
-//		} else if (j <= 8) {
-//		    tempX = -1;
-//		    tempY = -1;
-//		    tempZ = (j % 3) - 1;
-//		    //System.out.println("7 to 9");
-//		} else if (j <= 11) {
-//		    tempX = (j % 3) - 1;
-//		    tempY = 0;
-//		    tempZ = 0;
-//		    //System.out.println("10 to 12");
-//		} else if (j <= 14) {
-//		    tempX = 0;
-//		    tempY = (j % 3) - 1;
-//		    tempZ = 0;
-//		    //System.out.println("13 to 15");
-//		} else if (j <= 17) {
-//		    tempX = 0;
-//		    tempY = 0;
-//		    tempZ = (j % 3) - 1;
-//		    //System.out.println("16 to 18");
-//		} else if (j <= 20) {
-//		    tempX = (j % 3) - 1;
-//		    tempY = 1;
-//		    tempZ = 1;
-//		    //System.out.println("19 to 21");
-//		} else if (j <= 23) {
-//		    tempX = 1;
-//		    tempY = (j % 3) - 1;
-//		    tempZ = 1;
-//		    //System.out.println("22 to 24");
-//		} else if (j <= 26) {
-//		    tempX = 1;
-//		    tempY = 1;
-//		    tempZ = (j % 3) - 1;
-//		    //System.out.println("25 to 27");
-////		    System.out.println("City.getSurroundingNodes - pos offset " + tempX
-////			    + " "
-////			    + tempY
-////			    + " " 
-////			    + tempZ
-////			    + " ");
-//		}
-//
-//		if (tempPos.getX() + tempX == nodePos.getX()
-//			&& tempPos.getY() + tempY == nodePos.getY()
-//			&& tempPos.getZ() + tempZ == nodePos.getZ()) {
-//		    //System.out.println("City.getSurroundingNodes - node match " + tempPos + " type " + tempNode.getType());
-//		    if((tempX == -1 && tempY == -1 && tempZ == -1)
-//			    || (tempX == 0 && tempY == 0 && tempZ == 0)
-//			    || (tempX == 1 && tempY == 1 && tempZ == 1)){
-//			
-//			
-//			if(!minusoneAdded){
-//			    if(tempX == -1 && tempY == -1 && tempZ == -1){
-////				System.out.println("City.getSurroundingNodes - adding " + tempPos.getX() 
-////					+ " "
-////					+ tempPos.getY() 
-////					+ " " 
-////					+ tempPos.getZ() 
-////					+ " ");
-//				surNodes.add(tempNode);
-//				minusoneAdded = true;
-//			    }
-//			}
-//			//stop adding itself!
-////			if(!zeroAdded){
-////			    if(tempX == 0 && tempY == 0 && tempZ == 0){
-//////				System.out.println("City.getSurroundingNodes - adding " + tempPos.getX() 
-//////					+ " "
-//////					+ tempPos.getY() 
-//////					+ " " 
-//////					+ tempPos.getZ() 
-//////					+ " ");
-////				surNodes.add(tempNode);
-////				zeroAdded = true;
-////			    }
-////			}
-//			if(!plusoneAdded){
-//			    if(tempX == 1 && tempY == 1 && tempZ == 1){
-////				System.out.println("City.getSurroundingNodes - adding " + tempPos.getX() 
-////					+ " "
-////					+ tempPos.getY() 
-////					+ " " 
-////					+ tempPos.getZ() 
-////					+ " ");
-//				surNodes.add(tempNode);
-//				plusoneAdded = true;
-//			    }
-//			}
-//			
-//			
-//		    }else{
-////			System.out.println("City.getSurroundingNodes - adding " + tempPos.getX() 
-////				+ " "
-////				+ tempPos.getY() 
-////				+ " " 
-////				+ tempPos.getZ() 
-////				+ " ");
-//			surNodes.add(tempNode);
-//
-//		    }
-//		} else {
-//		    //System.out.println("City.getSurroundingNodes - dud " + tempX + " " + tempY + " " + tempZ);
-//		}
-//
-//	    }
-//
-//
-////	    if ((tempPos.getX() == nodePos.getX() - 1 || tempPos.getX() == nodePos.getX() || tempPos.getX() == nodePos.getX() + 1)
-////		    && (tempPos.getY() == nodePos.getY() - 1 || tempPos.getY() == nodePos.getY() || tempPos.getY() == nodePos.getY() + 1)
-////		    && (tempPos.getZ() == nodePos.getZ() - 1 || tempPos.getZ() == nodePos.getZ() || tempPos.getZ() == nodePos.getZ() + 1)
-////		    && (tempPos.getX() != nodePos.getX() && tempPos.getY() != nodePos.getY() && tempPos.getZ() != nodePos.getZ())) {
-////		System.out.println("City.getSurroundingNodes - tempPos " + tempPos);
-////		System.out.println("City.getSurroundingNodes - tempNodeType " + tempNode.getType());
-////	    }
-////	    if ((tempPos.getX() == nodePos.getX() - 1 || tempPos.getX() == nodePos.getX() || tempPos.getX() == nodePos.getX() + 1)
-////		    && (tempPos.getY() == nodePos.getY() - 1 || tempPos.getY() == nodePos.getY() || tempPos.getY() == nodePos.getY() + 1)
-////		    && (tempPos.getZ() == nodePos.getZ() - 1 || tempPos.getZ() == nodePos.getZ() || tempPos.getZ() == nodePos.getZ() + 1)
-////		    && (tempPos.getX() != nodePos.getX() && tempPos.getY() != nodePos.getY() && tempPos.getZ() != nodePos.getZ())) {
-////		//System.out.println("City.getSurroundingNodes - tempPos " + tempPos);
-////		//System.out.println("City.getSurroundingNodes - tempNodeType " + tempNode.getType());
-////	    }
-//	}
-	//System.out.println("City.getSurroundingNodes - endding surrounding nodes =======");
-
 	return surNodes;
     }
 
@@ -603,8 +360,6 @@ public class City extends SimpleApplication implements RawInputListener {
 	    for (int b = 0; b < width; b++) {
 		for (int c = 0; c < length; c++) {
 		    CityNode node = new CityNode(new Vector3f(x, y, z));
-//		    node.setUnderNode(getSurroundingNode(
-//			    new Vector3f(node.getPos().getX(), node.getPos().getY() - 1, node.getPos().getZ())));
 		    makeCubeAt(node.getPos(), node.getType());
 		    nodes.add(node);
 		    nodes.trimToSize();
@@ -618,7 +373,7 @@ public class City extends SimpleApplication implements RawInputListener {
 	}
     }
 
-    int cubeIndex = 0;
+    private int cubeIndex = 0;
     
     public Geometry makeCubeAt(Vector3f pos, CityNode.Type type) {
 	Box boxshape3 = new Box(new Vector3f(0,0,0), 0.5f, 0.5f, 0.5f);
@@ -626,9 +381,7 @@ public class City extends SimpleApplication implements RawInputListener {
 	Geometry cube_translucent = new Geometry(type + " " + String.valueOf(cubeIndex), boxshape3);
 	cube_translucent.move(pos);
 	Material mat_tt = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-	//mat_tt.setTexture("ColorMap", assetManager.loadTexture("Textures/ColoredTex/Monkey.png"));
 	mat_tt.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
-	//mat_tt.getAdditionalRenderState().setWireframe(true);
 	switch (type) {
 	    case BUILDING:
 		mat_tt.setColor("Color", ColorRGBA.Red);
@@ -652,7 +405,6 @@ public class City extends SimpleApplication implements RawInputListener {
 	cube_translucent.setMaterial(mat_tt);
 	nodeCubes.add(cube_translucent);
 	if (type != CityNode.Type.AIR) {
-	    //rootNode.attachChild(cube_translucent);
 	    renderableCubes.add(cube_translucent);
 	}
 	
@@ -683,49 +435,42 @@ public class City extends SimpleApplication implements RawInputListener {
     public void onMouseMotionEvent(MouseMotionEvent evt) {
 	//throw new UnsupportedOperationException("Not supported yet.");
 	//System.out.println("City.onMouseMotionEvent - move");
-	//resetNodeScales();
     }
 
     
-    Geometry clickedGeo = null;
-    ArrayList<Geometry> clickedGeos = new ArrayList<Geometry>();
-    CityNode clickedNode = null;
+    private Geometry clickedGeo = null;
+    private ArrayList<Geometry> clickedGeos = new ArrayList<Geometry>();
+    private CityNode clickedNode = null;
     
-    Vector2f mouseCoords;
-    Vector3f mouseWorldCoords;
-    Vector3f dir;
+    private Vector2f mouseCoords;
+    private Vector3f mouseWorldCoords;
+    private Vector3f dir;
     
     @Override
     public void onMouseButtonEvent(MouseButtonEvent evt) {
 	//throw new UnsupportedOperationException("Not supported yet.");
 	//System.out.println("City.onMouseButtonEvent - click " + evt.getButtonIndex());
 
-	//lookAtMouse(this.board.player.currentPiece.cube);
-
 	switch (evt.getButtonIndex()) {
 	    case 0:
 		break;
 	    case 1:
 		if (evt.isPressed()) {
-		    //highlightBrethren();
 		    highBros = true;
 		}
 		if(evt.isReleased())
 		{
 		    highBros = false;
-		    //resetNodeScales();
 		}
 		break;
 	    case 2:
 		if (evt.isPressed()) {
-		    //highlightSurroundingNodes();
 		    highSurrs = true;
 
 		}
 		if(evt.isReleased())
 		{
 		    highSurrs = false;
-		    //resetNodeScales();
 		}
 		break;
 	}
@@ -741,7 +486,6 @@ public class City extends SimpleApplication implements RawInputListener {
 //		    System.out.println("City.onKeyEvent - spacebar " + nodes.get(i).getType());
 //		}
 		case KeyInput.KEY_SPACE:
-			//nodes.get(i).setSurroundingNodes(getSurroundingNodes(nodes.get(i)));
 			executor.submit(
 				new Callable(){ 
 				    
@@ -753,9 +497,6 @@ public class City extends SimpleApplication implements RawInputListener {
 					}
 					return "";
 				    }});
-			//nodes.get(i).setSurroundingNodes(getSurroundingNodes(nodes.get(i)));
-			//nodes.get(i).checkForBrethren();
-		    //}
 		    break;
 		case KeyInput.KEY_K:
 		    if(executor.getActiveCount()<=0){
@@ -770,12 +511,7 @@ public class City extends SimpleApplication implements RawInputListener {
 			System.out.print(" nodeCubes " + nodeCubes.size());
 			System.out.print(" nodes " + nodes.size());
 			System.out.println("");
-			//if(executor.isShutdown()){
-			    //executor = new ScheduledThreadPoolExecutor(10);
-			    executor.submit(doNodes);
-			//}else{
-			    //System.out.println("City.onKeyEvent - exectuor still alive");
-			//}
+			executor.submit(doNodes);
 		    }
 		    break;
 		case KeyInput.KEY_L:
@@ -789,40 +525,40 @@ public class City extends SimpleApplication implements RawInputListener {
 	}
     }
 
-    boolean enableBrethren = false;
+    private boolean enableBrethren = false;
     
     @Override
     public void onTouchEvent(TouchEvent evt) {
 	//throw new UnsupportedOperationException("Not supported yet.");
     }
     
-    BitmapText debugText1;
-    BitmapText debugTextX, debugTextY, debugTextZ;
+    private BitmapText debugText1;
+    private BitmapText debugTextX, debugTextY, debugTextZ;
     
     public void debugText(){
 	debugText1 = new BitmapText(guiFont, false);
-	debugText1.setSize(20);      // font size
-	debugText1.setColor(ColorRGBA.Red);                             // font color
-	debugText1.setText("Debug!");             // the text
-	debugText1.setLocalTranslation(settings.getWidth()-debugText1.getLineWidth(), debugText1.getLineHeight(), 0); // position
+	debugText1.setSize(20);
+	debugText1.setColor(ColorRGBA.Red);
+	debugText1.setText("Debug!");
+	debugText1.setLocalTranslation(settings.getWidth()-debugText1.getLineWidth(), debugText1.getLineHeight(), 0);
 	
 	debugTextX = new BitmapText(guiFont, false);
-	debugTextX.setSize(20);      // font size
-	debugTextX.setColor(ColorRGBA.Red);                             // font color
-	debugTextX.setText("Debug X!");             // the text
-	debugTextX.setLocalTranslation(settings.getWidth()-debugTextX.getLineWidth(), debugTextX.getLineHeight()*2, 0); // position
+	debugTextX.setSize(20);
+	debugTextX.setColor(ColorRGBA.Red);
+	debugTextX.setText("Debug X!");
+	debugTextX.setLocalTranslation(settings.getWidth()-debugTextX.getLineWidth(), debugTextX.getLineHeight()*2, 0);
 	
 	debugTextY = new BitmapText(guiFont, false);
-	debugTextY.setSize(20);      // font size
-	debugTextY.setColor(ColorRGBA.Red);                             // font color
-	debugTextY.setText("Debug Y!");             // the text
-	debugTextY.setLocalTranslation(settings.getWidth()-debugTextY.getLineWidth(), debugTextY.getLineHeight()*3, 0); // position
+	debugTextY.setSize(20);
+	debugTextY.setColor(ColorRGBA.Red);
+	debugTextY.setText("Debug Y!");
+	debugTextY.setLocalTranslation(settings.getWidth()-debugTextY.getLineWidth(), debugTextY.getLineHeight()*3, 0);
 	
 	debugTextZ = new BitmapText(guiFont, false);
-	debugTextZ.setSize(20);      // font size
-	debugTextZ.setColor(ColorRGBA.Red);                             // font color
-	debugTextZ.setText("Debug Z!");             // the text
-	debugTextZ.setLocalTranslation(settings.getWidth()-debugTextZ.getLineWidth(), debugTextZ.getLineHeight()*4, 0); // position
+	debugTextZ.setSize(20);
+	debugTextZ.setColor(ColorRGBA.Red);
+	debugTextZ.setText("Debug Z!");
+	debugTextZ.setLocalTranslation(settings.getWidth()-debugTextZ.getLineWidth(), debugTextZ.getLineHeight()*4, 0);
 	
 	
 	getGuiNode().attachChild(debugText1);
@@ -847,29 +583,13 @@ public class City extends SimpleApplication implements RawInputListener {
     }
     
     void resetNodeScales(){
-//	for(int i=0;i<clickedGeos.size();i++){
-//	}
-//	if(clickedGeo != null){
-//	    clickedGeo.setLocalScale(1);
-//	}else{
-//	}
-//	if(clickedNode != null){
-//	    for(int i=0;i<clickedNode.getSurroundingNodes().size();i++){
-//		clickedNode.surroundingNodes.get(i).getBlock().setLocalScale(1);
-//	    }
-//	}
-//	if(clickedNode != null){
-//	    for(int i=0;i<clickedNode.getBuildingBlocks().size();i++){
-//		clickedNode.getBuildingBlocks().get(i).getBlock().setLocalScale(1);
-//	    }
-//	}
 	for(int i=0;i<renderableCubes.size();i++){
 	    renderableCubes.get(i).setLocalScale(1);
 	}
     }
     
-    CityNode previousClickedNode = null;
-    boolean highSurrs = false;
+    private CityNode previousClickedNode = null;
+    private boolean highSurrs = false;
     
     void highlightSurroundingNodes(){
 	if(clickedNode != null){
@@ -886,13 +606,9 @@ public class City extends SimpleApplication implements RawInputListener {
 	mouseWorldCoords = cam.getWorldCoordinates(new Vector2f(mouseCoords.getX(), mouseCoords.getY()), 0f).clone();
 	dir = cam.getWorldCoordinates(new Vector2f(mouseCoords.getX(), mouseCoords.getY()), 1f).subtractLocal(mouseWorldCoords).normalizeLocal();
 
-	//for(int j=0;j<rootNode.getChildren().size();j++){
 	Ray ray = new Ray(mouseWorldCoords, dir);
-	// Collect intersections between ray and all nodes in results list.
 	rootNode.collideWith(ray, results);
-	// (Print the results so we see what is going on:)
 	for (int i = 0; i < results.size(); i++) {
-	    // (For each “hit”, we know distance, impact point, geometry.)
 	    float dist = results.getCollision(i).getDistance();
 
 
@@ -905,16 +621,13 @@ public class City extends SimpleApplication implements RawInputListener {
 	    Vector3f contactPoint = results.getCollision(i).getContactPoint();
 	    String target = results.getCollision(i).getGeometry().getName();
 	    //System.out.println("City.MouseMotion - Selection #" + i + ": " + target + " at " + contactPoint + ", " + dist + " WU away.");
-	    //}
 	}
 
 	Geometry closest = null;
 	if(results.size()>0){
 	    clickedGeo = results.getClosestCollision().getGeometry();
 
-	    //closest.getMaterial().setColor("Color", ColorRGBA.Pink);
 	    for(int i=0;i<nodes.size();i++){
-		//if(nodes.get(i).getPos().distance(clickedGeo.getWorldTranslation())==0){
 		if(nodes.get(i).getBlock() != null){
 		    if(nodes.get(i).getBlock().getWorldTranslation().getX()==clickedGeo.getWorldTranslation().getX()
 			    && nodes.get(i).getBlock().getWorldTranslation().getY()==clickedGeo.getWorldTranslation().getY()
@@ -929,12 +642,11 @@ public class City extends SimpleApplication implements RawInputListener {
 	    if(clickedNode != null
 		    || clickedNode.getSurroundingNodes() != null){
 		for(int i=0;i<clickedNode.getSurroundingNodes().size();i++){
-		    if(clickedNode.surroundingNodes.get(i) != null
-			    || clickedNode.surroundingNodes.get(i).getBlock() != null 
+		    if(clickedNode.getSurroundingNodes().get(i) != null
+			    || clickedNode.getSurroundingNodes().get(i).getBlock() != null 
 			    || clickedNode != null){
-			clickedNode.surroundingNodes.get(i).getBlock().setLocalScale(0.5f);
+			clickedNode.getSurroundingNodes().get(i).getBlock().setLocalScale(0.5f);
 		    }
-		    //renderableCubes.add(clickedNode.surroundingNodes.get(i).getBlock());
 		}
 	    }
 
@@ -942,7 +654,7 @@ public class City extends SimpleApplication implements RawInputListener {
 	}
     }
     
-    boolean highBros = false;
+    private boolean highBros = false;
     void highlightBrethren(){
 	if(clickedNode != null){
 	    if(previousClickedNode != null){
@@ -952,9 +664,6 @@ public class City extends SimpleApplication implements RawInputListener {
 	    }
 	    previousClickedNode = clickedNode;
 	}
-	//		    mouseCoords = new Vector2f(evt.getX(), evt.getY());
-//		    mouseWorldCoords = getCamera().getWorldCoordinates(mouseCoords, 0f).clone();
-//		    dir = this.getCamera().getWorldCoordinates(new Vector2f(mouseCoords.x, mouseCoords.y), 1f).subtractLocal(mouseWorldCoords).normalizeLocal();
 		    
 		    CollisionResults results = new CollisionResults();
 		    
@@ -962,43 +671,29 @@ public class City extends SimpleApplication implements RawInputListener {
 		    mouseWorldCoords = cam.getWorldCoordinates(new Vector2f(mouseCoords.getX(), mouseCoords.getY()), 0f).clone();
 		    dir = cam.getWorldCoordinates(new Vector2f(mouseCoords.getX(), mouseCoords.getY()), 1f).subtractLocal(mouseWorldCoords).normalizeLocal();
 
-		    //for(int j=0;j<rootNode.getChildren().size();j++){
 		    Ray ray = new Ray(mouseWorldCoords, dir);
-		    // Collect intersections between ray and all nodes in results list.
 		    rootNode.collideWith(ray, results);
-		    // (Print the results so we see what is going on:)
 		    for (int i = 0; i < results.size(); i++) {
-			// (For each “hit”, we know distance, impact point, geometry.)
 			float dist = results.getCollision(i).getDistance();
 
 			
 			if (results.size() > 0) {
 			    clickedGeo = results.getCollision(i).getGeometry();
 			    clickedGeos.add(clickedGeo);
-			    //Material pink = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-			    //pink.setColor("Color", ColorRGBA.Pink);
-			    //clickedGeo.setMaterial(pink);
-			    //clickedGeo.setLocalScale(2);
 			    //System.out.println("City.onMouseButtonEvent - cube pos " + clickedGeo.getWorldTranslation());
-			    //renderableCubes.clear();
-			    //renderableCubes.add(clickedGeo);
-			    //System.out.println("City.onMouseButtonEvent - scaled/colored");
 			}
 			
 			
 			Vector3f contactPoint = results.getCollision(i).getContactPoint();
 			String target = results.getCollision(i).getGeometry().getName();
 			//System.out.println("City.MouseMotion - Selection #" + i + ": " + target + " at " + contactPoint + ", " + dist + " WU away.");
-			//}
 		    }
 
 		    Geometry closest = null;
 		    if(results.size()>0){
 			clickedGeo = results.getClosestCollision().getGeometry();
 		    
-			//closest.getMaterial().setColor("Color", ColorRGBA.Pink);
 			for(int i=0;i<nodes.size();i++){
-			    //if(nodes.get(i).getPos().distance(clickedGeo.getWorldTranslation())==0){
 			    if(nodes.get(i).getBlock() != null){
 				if(nodes.get(i).getBlock().getWorldTranslation().getX()==clickedGeo.getWorldTranslation().getX()
 					&& nodes.get(i).getBlock().getWorldTranslation().getY()==clickedGeo.getWorldTranslation().getY()
@@ -1014,7 +709,6 @@ public class City extends SimpleApplication implements RawInputListener {
 			//System.out.println("City.onMouseButtonEvent - clickedNode " + clickedNode.getBlock().getWorldTranslation());
 			//System.out.println("City.onMouseButtonEvent - clickedNode's brethren # " + clickedNode.surroundingNodes.size());
 			//System.out.println("City.highlightBrethren - clickedNode's brethren # " + clickedNode.getBuildingBlocks().size());
-			//clickedNode.checkForBrethren();
 			for(int i=0;i<clickedNode.getBuildingBlocks().size();i++){
 			//for(int i=0;i<clickedNode.getSurroundingNodes().size();i++){
 			    //System.out.println("City.onMouseButtonEvent - clickedNode's brethren " + clickedNode.surroundingNodes.get(i).getBlock());
